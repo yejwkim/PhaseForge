@@ -1,0 +1,38 @@
+# --- Node / Next.js (web, desktop) ---
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.turbo/
+
+# --- Python (api) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# --- Env / secrets (NEVER commit keys) ---
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# --- Supabase ---
+supabase/.branches/
+supabase/.temp/
+
+# --- Editor / OS ---
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# --- Logs ---
+*.log
+npm-debug.log*
