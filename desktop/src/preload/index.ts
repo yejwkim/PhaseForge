@@ -1,8 +1,18 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  lockdown: {
+    engage: (): Promise<boolean> => ipcRenderer.invoke('lockdown:set', true),
+    disengage: (): Promise<boolean> => ipcRenderer.invoke('lockdown:set', false),
+    onFocusChange: (cb: (focused: boolean) => void): (() => void) => {
+      const handler = (_e: IpcRendererEvent, focused: boolean): void => cb(focused)
+      ipcRenderer.on('lockdown:focus', handler)
+      return () => ipcRenderer.removeListener('lockdown:focus', handler)
+    }
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

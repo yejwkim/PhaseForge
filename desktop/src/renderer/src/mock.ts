@@ -7,6 +7,7 @@ export type Student = {
 }
 
 export type Assessment = {
+  id: string
   code: string
   course: string
   title: string
@@ -21,18 +22,6 @@ export type Question = {
   topic: string
   difficulty: string
   prompt: string
-}
-
-// Any non-empty code resolves to this sample assessment (mock).
-export function resolveAssessment(code: string): Assessment {
-  return {
-    code: code.toUpperCase(),
-    course: 'PHYS-201 · Thermodynamics',
-    title: 'Midterm: Thermodynamics',
-    questions: 15,
-    minutes: 60,
-    topics: ['Entropy', 'Heat Engines', 'Phase Transitions']
-  }
 }
 
 export const ROSTER: Student[] = [

@@ -41,13 +41,27 @@ function App(): React.JSX.Element {
       <ConsentScreen
         assessment={assessment}
         student={student}
-        onBegin={() => setStep('exam')}
+        onBegin={async () => {
+          await window.api?.lockdown?.engage()
+          setStep('exam')
+        }}
       />
     )
   }
 
   if (step === 'exam' && assessment && student) {
-    return <ExamScreen assessment={assessment} student={student} />
+    return (
+      <ExamScreen
+        assessment={assessment}
+        student={student}
+        onExit={async () => {
+          await window.api?.lockdown?.disengage()
+          setStudent(null)
+          setAssessment(null)
+          setStep('code')
+        }}
+      />
+    )
   }
 
   return <CodeScreen onResolved={(a) => { setAssessment(a); setStep('identify') }} />
