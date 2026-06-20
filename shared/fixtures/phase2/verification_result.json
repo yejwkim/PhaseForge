@@ -1,0 +1,50 @@
+{
+  "schema_version": "phase2.verification_result.v1",
+  "verification_id": "33333333-3333-4333-8333-333333333333",
+  "family_id": "22222222-2222-4222-8222-222222222222",
+  "variant_id": "44444444-4444-4444-8444-444444444444",
+  "status": "passed",
+  "verifier_kind": "sympy",
+  "computed_answer": "18",
+  "reference_solution": [
+    "Revenue is R(q) = q(108 - 3q).",
+    "Expand to R(q) = 108q - 3q^2.",
+    "The maximum occurs at q = 108 / (2 * 3) = 18."
+  ],
+  "complexity_score": 3.0,
+  "checks": [
+    {
+      "name": "answer_matches",
+      "status": "passed",
+      "message": "Symbolic computation agrees with the stored answer.",
+      "evidence": {
+        "expression": "108 / (2 * 3)",
+        "value": 18
+      }
+    },
+    {
+      "name": "similar_complexity",
+      "status": "passed",
+      "message": "Variant uses the same three-step solution path as the family template.",
+      "evidence": {
+        "step_count": 3,
+        "operations": [
+          "multiply",
+          "expand_quadratic",
+          "vertex_formula"
+        ]
+      }
+    },
+    {
+      "name": "within_scope",
+      "status": "passed",
+      "message": "Topic matches retrieved course material on revenue functions.",
+      "evidence": {
+        "source_chunk_ids": [
+          "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,172 @@
+{
+  "generated_question": {
+    "schema_version": "phase2.generated_question.v1",
+    "generated_question_id": "11111111-1111-4111-8111-111111111111",
+    "course_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "category_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    "source_chunk_ids": [
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+    ],
+    "question_type": "short_answer",
+    "topic": "Linear demand and revenue",
+    "difficulty": "Medium",
+    "learning_objective": "Compute revenue from a linear demand function and identify the maximizing quantity.",
+    "prompt": "A product has demand p(q) = 120 - 3q. Write the revenue function and find the quantity that maximizes revenue.",
+    "options": [],
+    "answer": "R(q) = 120q - 3q^2; the maximizing quantity is q = 20.",
+    "explanation": "Revenue is price times quantity. The resulting quadratic opens downward, and its vertex occurs at q = -b/(2a) = 20.",
+    "rubric": [
+      "Defines revenue as price multiplied by quantity.",
+      "Forms the quadratic revenue function correctly.",
+      "Finds the vertex quantity for a downward-opening quadratic."
+    ],
+    "professor_review_status": "approved"
+  },
+  "family_template": {
+    "schema_version": "phase2.family_template.v1",
+    "family_id": "22222222-2222-4222-8222-222222222222",
+    "course_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "category_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    "source_generated_question_id": "11111111-1111-4111-8111-111111111111",
+    "source_chunk_ids": [
+      "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+    ],
+    "question_type": "short_answer",
+    "topic": "Linear demand and revenue",
+    "difficulty": "Medium",
+    "learning_objective": "Compute revenue from a linear demand function and identify the maximizing quantity.",
+    "invariant_concept": "Revenue is price times quantity, and maximum revenue for a linear demand curve occurs at the vertex of the resulting quadratic.",
+    "template_text": "A product has demand p(q) = {intercept} - {slope}q. Write the revenue function and find the quantity that maximizes revenue.",
+    "variables": [
+      {
+        "name": "intercept",
+        "kind": "integer",
+        "constraints": {
+          "min": 60,
+          "max": 180,
+          "step": 12
+        },
+        "role": "Demand intercept"
+      },
+      {
+        "name": "slope",
+        "kind": "integer",
+        "constraints": {
+          "min": 2,
+          "max": 9
+        },
+        "role": "Demand slope"
+      }
+    ],
+    "answer_expression": "intercept / (2 * slope)",
+    "solution_template": [
+      "Revenue is R(q) = q * p(q).",
+      "Substitute p(q) to get R(q) = {intercept}q - {slope}q^2.",
+      "Because the quadratic opens downward, maximize at q = {intercept} / (2 * {slope})."
+    ],
+    "variant_strategy": "Vary intercept and slope while keeping a clean vertex quantity and the same three-step quadratic optimization solution.",
+    "verification_requirements": [
+      {
+        "name": "answer_matches",
+        "required": true
+      },
+      {
+        "name": "same_concept",
+        "required": true
+      },
+      {
+        "name": "similar_complexity",
+        "required": true
+      },
+      {
+        "name": "within_scope",
+        "required": true
+      },
+      {
+        "name": "not_duplicate",
+        "required": true
+      }
+    ],
+    "difficulty_prior": 0.55,
+    "irt_prior": {
+      "discrimination_a": 1.0,
+      "difficulty_b": 0.25,
+      "guessing_c": 0.0,
+      "calibration_state": "ai_prior"
+    }
+  },
+  "question_variant": {
+    "schema_version": "phase2.question_variant.v1",
+    "variant_id": "44444444-4444-4444-8444-444444444444",
+    "family_id": "22222222-2222-4222-8222-222222222222",
+    "course_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "category_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    "question_type": "short_answer",
+    "body": "A product has demand p(q) = 108 - 3q. Write the revenue function and find the quantity that maximizes revenue.",
+    "variables": {
+      "intercept": 108,
+      "slope": 3
+    },
+    "options": [],
+    "correct_answer": "18",
+    "solution": [
+      "Revenue is R(q) = q(108 - 3q).",
+      "Expand to R(q) = 108q - 3q^2.",
+      "The maximum occurs at q = 108 / (2 * 3) = 18."
+    ],
+    "difficulty": "Medium",
+    "verification_status": "passed",
+    "verification": {
+      "schema_version": "phase2.verification_result.v1",
+      "verification_id": "33333333-3333-4333-8333-333333333333",
+      "family_id": "22222222-2222-4222-8222-222222222222",
+      "variant_id": "44444444-4444-4444-8444-444444444444",
+      "status": "passed",
+      "verifier_kind": "sympy",
+      "computed_answer": "18",
+      "reference_solution": [
+        "Revenue is R(q) = q(108 - 3q).",
+        "Expand to R(q) = 108q - 3q^2.",
+        "The maximum occurs at q = 108 / (2 * 3) = 18."
+      ],
+      "complexity_score": 3.0,
+      "checks": [
+        {
+          "name": "answer_matches",
+          "status": "passed",
+          "message": "Symbolic computation agrees with the stored answer.",
+          "evidence": {
+            "expression": "108 / (2 * 3)",
+            "value": 18
+          }
+        },
+        {
+          "name": "similar_complexity",
+          "status": "passed",
+          "message": "Variant uses the same three-step solution path as the family template.",
+          "evidence": {
+            "step_count": 3,
+            "operations": [
+              "multiply",
+              "expand_quadratic",
+              "vertex_formula"
+            ]
+          }
+        },
+        {
+          "name": "within_scope",
+          "status": "passed",
+          "message": "Topic matches retrieved course material on revenue functions.",
+          "evidence": {
+            "source_chunk_ids": [
+              "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+              "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
