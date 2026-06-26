@@ -161,5 +161,5 @@ RENDERER_VITE_SUPABASE_ANON_KEY
 
 | Name | Role | Affiliation | GitHub |
 | --- | --- | --- | --- |
-| **Isaac Choi** | Question generation (Claude RAG) · Instructor web app · Student exam client | Computer Science @ UT Austin | [@isaacchoi031014](https://github.com/isaacchoi031014) |
-| **Yejune Kim** | Ingestion pipeline · Question families / variants / verification · Schema & contracts | UT Austin | [@yejwkim](https://github.com/yejwkim) |
+| **Isaac Choi** | Question generation (Claude RAG) · Instructor web app · Student exam client | CS & Mathematics @ UT Austin | [@isaacchoi031014](https://github.com/isaacchoi031014) |
+| **Yejune Kim** | Ingestion pipeline · Question families / variants / verification · Schema & contracts | CS & Data Science @ UT Austin | [@yejwkim](https://github.com/yejwkim) |
