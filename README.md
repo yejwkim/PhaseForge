@@ -43,7 +43,7 @@
 
 ## 🧭 How It Works
 
-<img width="2720" height="2480" alt="rag_assessment_architecture" src="https://github.com/user-attachments/assets/18d23fbe-87bb-4ea1-9460-8f401a6e3271" />
+<img width="873" height="720" alt="Screenshot 2026-06-26 at 4 57 12 PM" src="https://github.com/user-attachments/assets/0aed0948-062c-49e5-b42e-110760495cb3" />
 
 ---
 
