@@ -158,6 +158,28 @@ RENDERER_VITE_SUPABASE_ANON_KEY
 | ![](docs/assets/dashboard.png) | ![](docs/assets/pools.png) | ![](docs/assets/exam.png) |
 -->
 _Screenshots coming soon._
+Login Page
+<img width="1508" height="820" alt="Screenshot 2026-06-26 at 4 46 06 PM" src="https://github.com/user-attachments/assets/149b7310-ac06-4a8c-af16-ca675e818609" />
+
+Homepage
+
+<img width="1508" height="820" alt="Screenshot 2026-06-26 at 4 46 37 PM" src="https://github.com/user-attachments/assets/3999c7a0-76a1-4479-9682-4394570a6033" />
+
+Course Page
+<img width="1508" height="820" alt="Screenshot 2026-06-26 at 4 46 52 PM" src="https://github.com/user-attachments/assets/b1850fee-3125-4ad1-b444-d1ded1edea5e" />
+
+Source Materials Page
+<img width="1508" height="798" alt="Screenshot 2026-06-26 at 4 47 25 PM" src="https://github.com/user-attachments/assets/0b2c45fb-26ca-413d-9ce5-f05ec8d03fb0" />
+
+Assesment Page
+<img width="1508" height="798" alt="Screenshot 2026-06-26 at 4 47 42 PM" src="https://github.com/user-attachments/assets/79a7b24c-1e7f-4569-9169-f9d58bb5e027" />
+
+Create Assement Page
+<img width="1508" height="795" alt="Screenshot 2026-06-26 at 4 48 08 PM" src="https://github.com/user-attachments/assets/64628ea6-f007-4822-bf89-668eb779ba7e" />
+
+Question Pool Page
+<img width="1508" height="795" alt="Screenshot 2026-06-26 at 4 48 28 PM" src="https://github.com/user-attachments/assets/0386c04d-57f9-488e-9857-568fd74e1f3b" />
+
 
 ---
 
