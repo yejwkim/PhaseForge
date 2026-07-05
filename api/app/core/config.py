@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = Field(validation_alias="ANTHROPIC_API_KEY")
     generation_model: str = Field(default="claude-sonnet-4-6", validation_alias="GENERATION_MODEL")
     generation_max_tokens: int = Field(default=32000, validation_alias="GENERATION_MAX_TOKENS")
-    generation_retrieval_k: int = Field(default=6, validation_alias="GENERATION_RETRIEVAL_K")
+    generation_retrieval_k: int = Field(default=14, validation_alias="GENERATION_RETRIEVAL_K")
     # Cosine distance cutoff: chunks farther than this are treated as irrelevant
     # and dropped, so off-topic material can't ground generation. 0=identical, 2=opposite.
     generation_max_distance: float = Field(default=0.65, validation_alias="GENERATION_MAX_DISTANCE")

@@ -3,6 +3,7 @@ from uuid import UUID
 from app.core.supabase import get_supabase_client
 from app.models.generation import CategoryPlan, GeneratedQuestionSet, QuestionDraft
 from app.models.phase2_contracts import GeneratedQuestion
+from app.services.figures import render_figure_json
 
 JSON: TypeAlias = str | int | float | bool | None | list["JSON"] | dict[str, "JSON"]
 
@@ -61,10 +62,13 @@ def _resolve_category_for_topic(course_id: str, topic: str, fallback: str | None
     return fallback
 
 
-def update_question_content(question: dict[str, Any], draft: QuestionDraft) -> dict[str, Any]:
+def update_question_content(
+    question: dict[str, Any], draft: QuestionDraft, figure_svg: str = ""
+) -> dict[str, Any]:
     """Overwrite a question from a regenerated/edited draft. The instructor's draft
     can change topic/difficulty/type; category is re-resolved to match the topic.
-    Resets review status to draft."""
+    ``figure_svg`` is the already-rendered SVG the instructor accepted. Resets
+    review status to draft."""
     supabase = get_supabase_client()
     category_id = _resolve_category_for_topic(
         str(question["course_id"]), draft.topic, question.get("category_id")
@@ -83,6 +87,7 @@ def update_question_content(question: dict[str, Any], draft: QuestionDraft) -> d
                 "explanation": draft.explanation,
                 "rubric": cast(JSON, draft.rubric),
                 "learning_objective": draft.learning_objective,
+                "figure_svg": figure_svg,
                 "professor_review_status": "draft",
             }
         )
@@ -129,6 +134,7 @@ def insert_questions(
             "answer": question.answer,
             "explanation": question.explanation,
             "rubric": cast(JSON, question.rubric),
+            "figure_svg": render_figure_json(question.figure_spec_json),
             "source_chunk_ids": cast(JSON, source_chunk_ids),
             "professor_review_status": "draft",
         }

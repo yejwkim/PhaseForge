@@ -1,3 +1,4 @@
+import threading
 from fastapi import FastAPI, Depends, HTTPException, status, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from uuid import UUID
@@ -16,7 +17,6 @@ from app.services.retrieval import retrieve_top_chunks_for_material
 from app.models.generation import (
     ApplyQuestionRequest,
     GenerateRequest,
-    GenerateResponse,
     QuestionDraft,
     RegenerateRequest,
 )
@@ -29,6 +29,7 @@ from app.services.questions import (
 )
 from app.services.course_retrieval import retrieve_course_context
 from app.services.generation import generate_questions, regenerate_one
+from app.services.figures import render_figure_json
 
 settings = get_settings()
 
@@ -86,11 +87,12 @@ def run_ingestion(material_id: UUID, material: dict[str, Any]) -> None:
         if temp_path and temp_path.exists():
             temp_path.unlink()
 
-# Sync (def) on purpose: the body does blocking I/O (OpenAI, Claude, Supabase).
-# FastAPI runs sync path ops in a threadpool, so this won't block the event loop.
-@app.post("/generate", response_model=GenerateResponse)
+# Sync (def) on purpose: the body does blocking I/O. Validation runs inline so
+# the client gets immediate errors; the slow Claude generation is backgrounded so
+# it finishes even if the browser navigates away (results land in Question Pools).
+@app.post("/generate", status_code=status.HTTP_202_ACCEPTED)
 def generate(request: GenerateRequest,
-             current_user: AuthenticatedUser = Depends(get_current_user)) -> GenerateResponse:
+             current_user: AuthenticatedUser = Depends(get_current_user)) -> dict[str, Any]:
     course = get_owned_course(request.course_id, current_user.id)
 
     if not course:
@@ -99,27 +101,32 @@ def generate(request: GenerateRequest,
     if request.total_questions == 0:
         raise HTTPException(status_code=400, detail="Set at least one question count above zero.")
 
-    topics = [plan.name for plan in request.plans if plan.total > 0]
-    chunks = retrieve_course_context(request.course_id, topics)
+    # Detached daemon thread: generation is NOT tied to the request/response, so
+    # it keeps running even if the browser navigates away right after the 202.
+    threading.Thread(target=run_generation, args=(request,), daemon=True).start()
+    return {"status": "generating", "expected": request.total_questions}
 
-    if not chunks:
-        raise HTTPException(
-            status_code=400,
-            detail="No relevant material found — upload material covering these topics, or check the topic names match the content.",
-        )
 
+def run_generation(request: GenerateRequest) -> None:
+    """Retrieve + generate + persist a question pool, off the request thread."""
     try:
+        topics = [plan.name for plan in request.plans if plan.total > 0]
+        chunks = retrieve_course_context(request.course_id, topics)
+        if not chunks:
+            print(f"[generate] no relevant material for topics {topics}", flush=True)
+            return
         question_set = generate_questions(request, chunks)
+        source_chunk_ids = [str(chunk["id"]) for chunk in chunks]
+        insert_questions(
+            request.course_id, request.assessment_id, question_set, source_chunk_ids, request.plans
+        )
+        print(
+            f"[generate] done: {len(question_set.questions)} questions "
+            f"(assessment {request.assessment_id})",
+            flush=True,
+        )
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Question generation failed: {exc}")
-
-    source_chunk_ids = [str(chunk["id"]) for chunk in chunks]
-    rows = insert_questions(
-        request.course_id, request.assessment_id, question_set, source_chunk_ids, request.plans
-    )
-    questions = [to_contract_question(row) for row in rows]
-
-    return GenerateResponse(course_id=request.course_id, count=len(questions), questions=questions)
+        print(f"[generate] background generation failed: {exc}", flush=True)
 
 # Sync (def) on purpose: blocking I/O runs in FastAPI's threadpool.
 @app.post("/regenerate")
@@ -145,7 +152,11 @@ def regenerate(request: RegenerateRequest,
 
     # Return a CANDIDATE without persisting — the professor compares it against the
     # current question and accepts it via /questions/apply (or regenerates again).
-    return draft.model_dump(mode="json")
+    # Render the figure spec to SVG here so the client shows/accepts the drawn figure.
+    candidate = draft.model_dump(mode="json")
+    candidate.pop("figure_spec_json", None)
+    candidate["figure_svg"] = render_figure_json(draft.figure_spec_json)
+    return candidate
 
 
 @app.post("/questions/apply")
@@ -168,7 +179,7 @@ def apply_question(request: ApplyQuestionRequest,
         rubric=request.rubric,
         learning_objective=request.learning_objective,
     )
-    row = update_question_content(question, draft)
+    row = update_question_content(question, draft, request.figure_svg)
     return to_contract_question(row)
 
 
