@@ -9,6 +9,7 @@ import {
   setQuestionStatus,
 } from "@/app/(dashboard)/assessments/actions";
 import { createClient } from "@/lib/supabase/client";
+import { SvgFigure } from "@/components/dashboard/svg-figure";
 
 export type ReviewStatus = "draft" | "approved" | "rejected";
 
@@ -22,6 +23,7 @@ export type PoolQuestion = {
   answer: string;
   explanation: string;
   rubric: string[];
+  figure_svg?: string;
   professor_review_status: ReviewStatus;
 };
 
@@ -35,6 +37,7 @@ type Candidate = {
   explanation: string;
   rubric: string[];
   learning_objective: string;
+  figure_svg?: string;
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -132,6 +135,7 @@ export function QuestionReviewCard({
         explanation: candidate.explanation,
         rubric: candidate.rubric,
         learning_objective: candidate.learning_objective,
+        figure_svg: candidate.figure_svg ?? "",
       });
       resetRecreate();
       router.refresh();
@@ -207,6 +211,7 @@ export function QuestionReviewCard({
         answer={q.answer}
         explanation={q.explanation}
         rubric={q.rubric}
+        figureSvg={q.figure_svg}
         open={open}
         onToggle={() => setOpen((o) => !o)}
       />
@@ -262,6 +267,7 @@ export function QuestionReviewCard({
                     answer={q.answer}
                     explanation={q.explanation}
                     rubric={q.rubric}
+                    figureSvg={q.figure_svg}
                     open
                   />
                 </ComparePane>
@@ -276,6 +282,7 @@ export function QuestionReviewCard({
                     answer={candidate.answer}
                     explanation={candidate.explanation}
                     rubric={candidate.rubric}
+                    figureSvg={candidate.figure_svg}
                     open
                   />
                 </ComparePane>
@@ -328,6 +335,7 @@ function QuestionBody({
   answer,
   explanation,
   rubric,
+  figureSvg,
   open,
   onToggle,
 }: {
@@ -336,12 +344,14 @@ function QuestionBody({
   answer: string;
   explanation: string;
   rubric: string[];
+  figureSvg?: string;
   open: boolean;
   onToggle?: () => void;
 }) {
   return (
     <>
       <p className="whitespace-pre-wrap text-sm text-[#e3e2e3]">{prompt}</p>
+      <SvgFigure svg={figureSvg} />
 
       {options?.length > 0 && (
         <ul className="mt-3 flex flex-col gap-1.5">

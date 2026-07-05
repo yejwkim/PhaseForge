@@ -159,8 +159,11 @@ export function AssessmentBuilder({ courses }: { courses: Course[] }) {
       name: t.name,
       ...(counts[t.id] ?? EMPTY_COUNTS),
     }));
+    const expected = total;
 
     try {
+      // Kick off generation — the API returns immediately and finishes the work
+      // in the background, so leaving this page no longer cancels it.
       const apiRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate`, {
         method: "POST",
         headers: {
@@ -182,15 +185,46 @@ export function AssessmentBuilder({ courses }: { courses: Course[] }) {
           .catch(() => null);
         throw new Error(detail || `Request failed (${apiRes.status})`);
       }
-      const data = (await apiRes.json()) as { questions: GeneratedQuestion[] };
-      setGenerated(data.questions ?? []);
     } catch (e) {
       setGenError(
         e instanceof Error ? e.message : "Generation failed — is the API running?",
       );
-    } finally {
       setGenBusy(false);
+      return;
     }
+
+    // Poll the questions table so results show up as they land (and the work
+    // keeps going server-side even if the user navigates away).
+    const deadline = Date.now() + 180_000; // 3 min safety cap
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 3000));
+      const { data } = await supabase
+        .from("questions")
+        .select(
+          "id, type, topic, difficulty, learning_objective, prompt, options, answer, explanation, rubric, figure_svg",
+        )
+        .eq("assessment_id", assessmentId)
+        .order("created_at", { ascending: true });
+      if (data) {
+        setGenerated(
+          data.map((r) => ({
+            generated_question_id: r.id as string,
+            question_type: r.type as GeneratedQuestion["question_type"],
+            topic: (r.topic as string) ?? "",
+            difficulty: (r.difficulty as string) ?? "",
+            learning_objective: (r.learning_objective as string) ?? "",
+            prompt: (r.prompt as string) ?? "",
+            options: (r.options as string[]) ?? [],
+            answer: (r.answer as string) ?? "",
+            explanation: (r.explanation as string) ?? "",
+            rubric: (r.rubric as string[]) ?? [],
+            figure_svg: (r.figure_svg as string) ?? "",
+          })),
+        );
+        if (data.length >= expected) break; // pool complete
+      }
+    }
+    setGenBusy(false);
   }
 
   function changeCourse(id: string) {
@@ -280,9 +314,15 @@ export function AssessmentBuilder({ courses }: { courses: Course[] }) {
         </div>
 
         {genBusy && (
-          <div className="glass-panel flex items-center justify-center gap-3 rounded-2xl py-10 text-sm text-[#c4c7c8]">
-            <Loader2 className="size-4 animate-spin" strokeWidth={2} />
-            Generating questions from your course materials…
+          <div className="glass-panel flex flex-col items-center justify-center gap-2 rounded-2xl py-8 text-center text-sm text-[#c4c7c8]">
+            <span className="flex items-center gap-3">
+              <Loader2 className="size-4 animate-spin" strokeWidth={2} />
+              Generating questions from your course materials…
+            </span>
+            <span className="text-xs text-[#c4c7c8]/60">
+              This runs in the background — you can leave; results also appear in
+              Question Pools.
+            </span>
           </div>
         )}
         {genError && (

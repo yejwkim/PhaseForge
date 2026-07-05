@@ -4,6 +4,7 @@ import { ChevronLeft, Trash2 } from "lucide-react";
 
 import { deleteAssessment } from "@/app/(dashboard)/assessments/actions";
 import { CopyButton } from "@/components/dashboard/copy-button";
+import { PoolSummary } from "@/components/dashboard/pool-summary";
 import { type PoolQuestion } from "@/components/dashboard/question-review-card";
 import { createClient } from "@/lib/supabase/server";
 
@@ -166,9 +167,11 @@ export default async function AssessmentDetailPage({
           <div className="font-label-cosmic mb-1 text-[10px] uppercase tracking-widest text-[#c4c7c8]/60">
             Question pool
           </div>
-          <p className="text-sm text-[#c4c7c8]">
-            {poolCount} question{poolCount === 1 ? "" : "s"} · {approvedCount} approved
-          </p>
+          <PoolSummary
+            assessmentId={a.id}
+            initialCount={poolCount}
+            initialApproved={approvedCount}
+          />
         </div>
         <Link
           href="/question-pools"

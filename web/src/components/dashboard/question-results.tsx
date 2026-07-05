@@ -1,5 +1,7 @@
 "use client";
 
+import { SvgFigure } from "@/components/dashboard/svg-figure";
+
 export type QuestionType = "mcq" | "short_answer" | "essay";
 
 // Matches the phase2.generated_question.v1 contract returned by /generate.
@@ -14,6 +16,7 @@ export type GeneratedQuestion = {
   answer: string;
   explanation: string;
   rubric: string[];
+  figure_svg?: string;
 };
 
 const TYPE_LABEL: Record<QuestionType, string> = {
@@ -73,6 +76,7 @@ function QuestionCard({ q, index }: { q: GeneratedQuestion; index: number }) {
       )}
 
       <p className="whitespace-pre-wrap text-sm text-[#e3e2e3]">{q.prompt}</p>
+      <SvgFigure svg={q.figure_svg} />
 
       {q.options?.length > 0 && (
         <ul className="mt-3 flex flex-col gap-1.5">

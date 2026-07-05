@@ -31,7 +31,7 @@ export default async function QuestionPoolsPage() {
     supabase
       .from("questions")
       .select(
-        "id, type, topic, difficulty, prompt, options, answer, explanation, rubric, professor_review_status, course_id, category_id, assessment_id",
+        "id, type, topic, difficulty, prompt, options, answer, explanation, rubric, figure_svg, professor_review_status, course_id, category_id, assessment_id",
       )
       .order("created_at", { ascending: true }),
   ]);

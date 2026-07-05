@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { BookOpen, ChevronLeft, ChevronRight, Loader2, Plus, Trash2 } from "lucide-react";
 
@@ -269,11 +269,71 @@ function AddQuestionsPanel({
   const [counts, setCounts] = useState({ easy: 1, medium: 1, hard: 1 });
   const [instructions, setInstructions] = useState("");
   const [busy, setBusy] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const total = counts.easy + counts.medium + counts.hard;
+  const genKey = `pf-generating-${assessmentId}`;
+
+  // Resume the "Generating…" indicator after navigating away and back —
+  // generation runs server-side; its pending state is persisted in localStorage.
+  useEffect(() => {
+    const raw = typeof window === "undefined" ? null : localStorage.getItem(genKey);
+    if (!raw) return;
+    let info: { baseline: number; until: number };
+    try {
+      info = JSON.parse(raw);
+    } catch {
+      localStorage.removeItem(genKey);
+      return;
+    }
+    if (Date.now() > info.until) {
+      localStorage.removeItem(genKey);
+      return;
+    }
+    setGenerating(true);
+    void pollUntilDone(info.baseline, info.until);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assessmentId]);
+
+  // Keep the indicator up until questions actually land. The backend writes the
+  // whole batch in ONE insert at the end of the run, so the count jumps from
+  // `baseline` to `baseline + N` atomically — "count went above baseline" is the
+  // reliable done-signal. We do NOT infer "done" from a flat count (the count is
+  // flat for the entire run until that final insert), which previously hid the
+  // spinner ~12s in, long before the questions appeared. Falls back to a hard
+  // deadline so a fully-failed run can't spin forever.
+  async function pollUntilDone(baseline: number, until: number) {
+    const supabase = createClient();
+    while (Date.now() < until) {
+      await new Promise((r) => setTimeout(r, 3000));
+      const { count } = await supabase
+        .from("questions")
+        .select("id", { count: "exact", head: true })
+        .eq("assessment_id", assessmentId);
+      if ((count ?? 0) > baseline) break; // questions landed → done
+    }
+    if (typeof window !== "undefined") localStorage.removeItem(genKey);
+    setGenerating(false);
+    setOpen(false);
+    router.refresh();
+  }
 
   if (topics.length === 0) return null;
+
+  if (generating) {
+    return (
+      <div className="glass-panel flex flex-col items-center justify-center gap-2 rounded-2xl py-6 text-center text-sm text-[#c4c7c8]">
+        <span className="flex items-center gap-3">
+          <Loader2 className="size-4 animate-spin" strokeWidth={2} />
+          Generating questions…
+        </span>
+        <span className="text-xs text-[#c4c7c8]/60">
+          Runs in the background — the new questions will appear here shortly.
+        </span>
+      </div>
+    );
+  }
 
   if (!open) {
     return (
@@ -295,12 +355,25 @@ function AddQuestionsPanel({
     }
     setBusy(true);
     setError(null);
+    const supabase = createClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      setError("Your session expired — please log in again.");
+      setBusy(false);
+      return;
+    }
+
+    // Baseline count captured BEFORE the run; any increase above it means the
+    // generated questions have landed (they're written in a single insert).
+    const { count: baselineCount } = await supabase
+      .from("questions")
+      .select("id", { count: "exact", head: true })
+      .eq("assessment_id", assessmentId);
+    const baseline = baselineCount ?? 0;
+
     try {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) throw new Error("Your session expired — please log in again.");
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate`, {
         method: "POST",
         headers: {
@@ -322,14 +395,20 @@ function AddQuestionsPanel({
           .catch(() => null);
         throw new Error(detail || `Request failed (${res.status})`);
       }
-      setOpen(false);
-      setInstructions("");
-      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Generation failed — is the API running?");
-    } finally {
       setBusy(false);
+      return;
     }
+
+    // Persist the pending state so the indicator survives navigation, then poll.
+    const until = Date.now() + 180_000;
+    if (typeof window !== "undefined")
+      localStorage.setItem(genKey, JSON.stringify({ baseline, until }));
+    setBusy(false);
+    setInstructions("");
+    setGenerating(true);
+    await pollUntilDone(baseline, until);
   }
 
   return (
